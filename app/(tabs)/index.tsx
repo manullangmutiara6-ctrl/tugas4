@@ -1,98 +1,291 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { 
+  Text, 
+  View, 
+  StyleSheet, 
+  TextInput, 
+  TouchableOpacity, 
+  SafeAreaView,
+  StatusBar,
+  Dimensions,
+  Modal
+} from 'react-native';
 
-import { HelloWave } from '@/components/hello-wave';
-import ParallaxScrollView from '@/components/parallax-scroll-view';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { Link } from 'expo-router';
+const { width } = Dimensions.get('window');
 
-export default function HomeScreen() {
+export default function App() {
+  const [count, setCount] = useState(0);
+  const [name, setName] = useState('');
+  
+  // Target kemenangan diatur ke 50
+  const TARGET_WIN = 50;
+  const MAX_BAR = 100;
+
+  const resetAll = () => {
+    setCount(0);
+    setName('');
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <Link href="/modal">
-          <Link.Trigger>
-            <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-          </Link.Trigger>
-          <Link.Preview />
-          <Link.Menu>
-            <Link.MenuAction title="Action" icon="cube" onPress={() => alert('Action pressed')} />
-            <Link.MenuAction
-              title="Share"
-              icon="square.and.arrow.up"
-              onPress={() => alert('Share pressed')}
-            />
-            <Link.Menu title="More" icon="ellipsis">
-              <Link.MenuAction
-                title="Delete"
-                icon="trash"
-                destructive
-                onPress={() => alert('Delete pressed')}
-              />
-            </Link.Menu>
-          </Link.Menu>
-        </Link>
+    <SafeAreaView style={styles.container}>
+      <StatusBar barStyle="dark-content" />
 
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      {/* MODAL KEMENANGAN (Muncul tepat di angka 50) */}
+      <Modal visible={count >= TARGET_WIN} animationType="slide" transparent={true}>
+        <View style={styles.overlay}>
+          <View style={styles.victoryCard}>
+            <Text style={styles.victoryEmoji}>☀️🌻🎈</Text>
+            <Text style={styles.victoryTitle}>KAMU KEREN BANGET!</Text>
+            
+            <View style={styles.messageBox}>
+              <Text style={styles.victoryMessage}>
+                Yeay! <Text style={{color: '#FF9F1C', fontWeight: 'bold'}}>{name || "Teman Cerah"}</Text>, 
+                kamu sudah sampai di angka <Text style={styles.boldText}>{count}</Text>!
+              </Text>
+              <Text style={styles.victorySubMessage}>
+                "Energi positifmu hari ini benar-benar terpancar. Terima kasih sudah berbagi senyum melalui setiap ketukan!" 
+              </Text>
+            </View>
+
+            <TouchableOpacity 
+              style={styles.restartBtn} 
+              onPress={() => setCount(0)}
+            >
+              <Text style={styles.restartText}>Main Lagi Yuk! ✨</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      </Modal>
+
+      {/* TAMPILAN DASHBOARD CERAH */}
+      <View style={styles.mainCard}>
+        <Text style={styles.brandTitle}>H a p p y  C o u n t e r</Text>
+        
+        {/* Progress Bar Visual */}
+        <View style={styles.progressContainer}>
+          <View style={styles.barBackground}>
+            <View style={[styles.barFill, { width: `${(count / MAX_BAR) * 100}%` }]} />
+          </View>
+          <Text style={styles.progressLabel}>{count} / {MAX_BAR}</Text>
+        </View>
+
+        <View style={styles.inputSection}>
+          <Text style={styles.inputLabel}>Sapa dunia dengan namamu:</Text>
+          <TextInput
+            style={styles.input}
+            placeholder="Tulis di sini..."
+            placeholderTextColor="#FFBF69"
+            value={name}
+            onChangeText={setName}
+          />
+        </View>
+
+        {/* Counter Circle */}
+        <View style={[styles.counterBox, { borderColor: count >= TARGET_WIN ? '#2EC4B6' : '#FFBF69' }]}>
+          <Text style={styles.countNumber}>{count}</Text>
+          <Text style={styles.pointText}>HAPPINESS POINTS</Text>
+        </View>
+
+        <View style={styles.buttonRow}>
+          <TouchableOpacity 
+            style={[styles.actionBtn, styles.btnMinus]} 
+            onPress={() => count > 0 && setCount(count - 1)}
+          >
+            <Text style={styles.actionBtnText}>−</Text>
+          </TouchableOpacity>
+
+          <TouchableOpacity 
+            style={[styles.actionBtn, styles.btnPlus]} 
+            onPress={() => count < MAX_BAR && setCount(count + 1)}
+          >
+            <Text style={[styles.actionBtnText, { color: '#FFF' }]}>TAMBAH</Text>
+          </TouchableOpacity>
+        </View>
+
+        <TouchableOpacity onPress={resetAll} style={styles.resetBtn}>
+          <Text style={styles.resetBtnText}>Mulai Dari Nol</Text>
+        </TouchableOpacity>
+      </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
+  container: {
+    flex: 1,
+    backgroundColor: '#CBF3F0', // Mint cerah
+    justifyContent: 'center',
     alignItems: 'center',
-    gap: 8,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  mainCard: {
+    width: width * 0.9,
+    backgroundColor: '#FFFFFF',
+    borderRadius: 40,
+    padding: 25,
+    alignItems: 'center',
+    elevation: 10,
+    shadowColor: '#2EC4B6',
+    shadowOpacity: 0.3,
+    shadowRadius: 20,
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  brandTitle: {
+    fontSize: 22,
+    fontWeight: '900',
+    color: '#FF9F1C',
+    letterSpacing: 2,
+    marginBottom: 20,
   },
+  progressContainer: {
+    width: '100%',
+    alignItems: 'center',
+    marginBottom: 25,
+  },
+  barBackground: {
+    width: '100%',
+    height: 14,
+    backgroundColor: '#F1F1F1',
+    borderRadius: 20,
+    overflow: 'hidden',
+  },
+  barFill: {
+    height: '100%',
+    backgroundColor: '#2EC4B6', // Tiffany Blue cerah
+  },
+  progressLabel: {
+    fontSize: 12,
+    fontWeight: 'bold',
+    color: '#2EC4B6',
+    marginTop: 5,
+  },
+  inputSection: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  inputLabel: {
+    fontSize: 12,
+    color: '#FFBF69',
+    textAlign: 'center',
+    marginBottom: 5,
+    fontWeight: '600',
+  },
+  input: {
+    backgroundColor: '#FF9F1C10',
+    borderRadius: 15,
+    padding: 12,
+    textAlign: 'center',
+    fontSize: 16,
+    color: '#FF9F1C',
+    fontWeight: 'bold',
+  },
+  counterBox: {
+    width: 200,
+    height: 200,
+    borderRadius: 100,
+    borderWidth: 8,
+    borderStyle: 'dashed',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: 30,
+  },
+  countNumber: {
+    fontSize: 80,
+    fontWeight: '900',
+    color: '#2EC4B6',
+  },
+  pointText: {
+    fontSize: 10,
+    fontWeight: 'bold',
+    color: '#FFBF69',
+    letterSpacing: 1,
+  },
+  buttonRow: {
+    flexDirection: 'row',
+    gap: 15,
+  },
+  actionBtn: {
+    height: 60,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderRadius: 20,
+    elevation: 3,
+  },
+  btnMinus: {
+    width: 60,
+    backgroundColor: '#FDFFB6',
+  },
+  btnPlus: {
+    flex: 1,
+    backgroundColor: '#FF9F1C',
+    paddingHorizontal: 40,
+  },
+  actionBtnText: {
+    fontSize: 18,
+    fontWeight: 'bold',
+    color: '#FF9F1C',
+  },
+  resetBtn: {
+    marginTop: 30,
+  },
+  resetBtnText: {
+    color: '#BDC3C7',
+    fontSize: 12,
+    fontWeight: 'bold',
+    textDecorationLine: 'underline',
+  },
+
+  // STYLES MODAL
+  overlay: {
+    flex: 1,
+    backgroundColor: '#2EC4B6CC', // Background transparan warna mint
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  victoryCard: {
+    width: width * 0.85,
+    backgroundColor: '#FFF',
+    borderRadius: 30,
+    padding: 30,
+    alignItems: 'center',
+  },
+  victoryEmoji: {
+    fontSize: 50,
+    marginBottom: 10,
+  },
+  victoryTitle: {
+    fontSize: 24,
+    fontWeight: '900',
+    color: '#FF9F1C',
+    textAlign: 'center',
+  },
+  messageBox: {
+    marginVertical: 20,
+  },
+  victoryMessage: {
+    fontSize: 18,
+    color: '#333',
+    textAlign: 'center',
+    lineHeight: 26,
+  },
+  victorySubMessage: {
+    fontSize: 15,
+    color: '#2EC4B6',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginTop: 10,
+  },
+  boldText: {
+    fontWeight: 'bold',
+    fontSize: 22,
+  },
+  restartBtn: {
+    backgroundColor: '#FF9F1C',
+    paddingVertical: 15,
+    paddingHorizontal: 40,
+    borderRadius: 20,
+  },
+  restartText: {
+    color: '#FFF',
+    fontWeight: 'bold',
+    fontSize: 16,
+  }
 });
